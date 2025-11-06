@@ -31,14 +31,14 @@ const customerSchema = new mongoose.Schema(
       type: String,
       required: false,
       uppercase: true,
-      unique: false, // ✅ set false since GST may be empty for some customers
-      sparse: true, // avoids unique index errors when field is missing
       trim: true,
     },
     mobile: {
       type: String,
       required: [true, "Mobile number is required"],
       match: [/^[0-9]{10}$/, "Enter a valid 10-digit mobile number"],
+      unique: true, 
+      sparse: true, 
       trim: true,
     },
     margin_percentage: {

@@ -29,12 +29,12 @@ export const createCustomer = async (req, res) => {
     }
 
     // ✅ Check for existing GST (only if gst is provided)
-    if (gst) {
-      const existingCustomer = await Customer.findOne({ gst });
+    if (mobile) {
+      const existingCustomer = await Customer.findOne({ mobile });
       if (existingCustomer) {
         return res
           .status(400)
-          .json({ message: "Customer with this GST already exists" });
+          .json({ message: "Customer with same mobile already exists" });
       }
     }
 
