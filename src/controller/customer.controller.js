@@ -1,46 +1,79 @@
 import { Customer } from "../models/customer.model.js";
 
-// Create new customer
 export const createCustomer = async (req, res) => {
   try {
-    const { name, address, GSTno, mobileNumber, margin } = req.body;
+    const {
+      name,
+      address,
+      city,
+      state,
+      pincode,
+      gst,
+      mobile,
+      margin_percentage,
+    } = req.body;
 
-    if (!name || !address || !GSTno || !mobileNumber || margin == null) {
-      return res.status(400).json({ message: "All fields are required" });
-    }
-
-    const existingCustomer = await Customer.findOne({ GSTno });
-    if (existingCustomer) {
+    // ✅ Basic validation
+    if (
+      !name ||
+      !address ||
+      !city ||
+      !state ||
+      !pincode ||
+      !mobile ||
+      margin_percentage == null
+    ) {
       return res
         .status(400)
-        .json({ message: "Customer with this GST already exists" });
+        .json({ message: "All required fields must be provided" });
     }
 
+    // ✅ Check for existing GST (only if gst is provided)
+    if (gst) {
+      const existingCustomer = await Customer.findOne({ gst });
+      if (existingCustomer) {
+        return res
+          .status(400)
+          .json({ message: "Customer with this GST already exists" });
+      }
+    }
+
+    // ✅ Create new customer
     const customer = await Customer.create({
       name,
       address,
-      GSTno,
-      mobileNumber,
-      margin,
+      city,
+      state,
+      pincode,
+      gst,
+      mobile,
+      margin_percentage,
     });
 
-    res.status(201).json(customer);
+    res.status(201).json({
+      message: "Customer created successfully",
+      customer,
+    });
   } catch (error) {
-    res.status(500).json({ message: "Server error", error });
+    console.error("Error creating customer:", error);
+    res.status(500).json({
+      message: "Server error while creating customer",
+      error: error.message,
+    });
   }
 };
 
-// Get all customers (excluding deleted)
-export const getAllCustomers = async (req, res) => {
-  try {
-    const customers = await Customer.find({ isDeleted: false }).sort({
-      createdAt: -1,
-    });
-    res.status(200).json(customers);
-  } catch (error) {
-    res.status(500).json({ message: "Server error", error });
-  }
-};
+// // Get all customers (excluding deleted)
+// export const getAllCustomers = async (req, res) => {
+//   try {
+//     const customers = await Customer.find({ isDeleted: false }).sort({
+//       createdAt: -1,
+//     });
+//     res.status(200).json(customers);
+//   } catch (error) {
+//     res.status(500).json({ message: "Server error", error });
+//   }
+// };
 
 // Get single customer by ID (only if not deleted)
 export const getCustomerById = async (req, res) => {
@@ -90,3 +123,71 @@ export const deleteCustomer = async (req, res) => {
     res.status(500).json({ message: "Server error", error });
   }
 };
+
+
+
+export const getAllCustomers = async (req, res) => {
+  try {
+    const {
+      page_number = 1,
+      page_size = 10,
+      search = "",
+    } = req.query;
+
+    const page = parseInt(page_number);
+    const limit = parseInt(page_size);
+    const skip = (page - 1) * limit;
+
+    // ✅ Search condition
+    const searchQuery = {
+      isDeleted: false,
+      $or: [
+        { name: { $regex: search, $options: "i" } },
+        { city: { $regex: search, $options: "i" } },
+        { state: { $regex: search, $options: "i" } },
+        { mobile: { $regex: search, $options: "i" } },
+      ],
+    };
+
+    // ✅ Count total records
+    const totalCustomers = await Customer.countDocuments(searchQuery);
+
+    // ✅ Fetch paginated data
+    const customers = await Customer.find(searchQuery)
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit);
+
+    // ✅ Transform data to include `id` instead of `_id`
+    const formattedCustomers = customers.map((cust) => ({
+      id: cust._id, // ✅ include MongoDB id
+      name: cust.name,
+      address: cust.address,
+      city: cust.city,
+      state: cust.state,
+      pincode: cust.pincode,
+      gst: cust.gst,
+      mobile: cust.mobile,
+      margin_percentage: cust.margin_percentage,
+      createdAt: cust.createdAt,
+      updatedAt: cust.updatedAt,
+    }));
+
+    res.status(200).json({
+      success: true,
+      total: totalCustomers,
+      page,
+      page_size: limit,
+      total_pages: Math.ceil(totalCustomers / limit),
+      customers: formattedCustomers,
+    });
+  } catch (error) {
+    console.error("Error fetching customers:", error);
+    res.status(500).json({
+      success: false,
+      message: "Server error while fetching customers",
+      error: error.message,
+    });
+  }
+};
+

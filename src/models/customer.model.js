@@ -4,36 +4,62 @@ const customerSchema = new mongoose.Schema(
   {
     name: {
       type: String,
-      required: true,
+      required: [true, "Customer name is required"],
       trim: true,
     },
     address: {
       type: String,
-      required: true,
+      required: [true, "Address is required"],
       trim: true,
     },
-    GSTno: {
+    city: {
       type: String,
-      required: true,
-      unique: true,
+      required: [true, "City is required"],
+      trim: true,
+    },
+    state: {
+      type: String,
+      required: [true, "State is required"],
+      trim: true,
+    },
+    pincode: { // ✅ match frontend field name
+      type: String,
+      required: [true, "Pincode is required"],
+      trim: true,
+    },
+    gst: {
+      type: String,
+      required: false,
       uppercase: true,
+      unique: false, // ✅ set false since GST may be empty for some customers
+      sparse: true, // avoids unique index errors when field is missing
+      trim: true,
     },
-    mobileNumber: {
+    mobile: {
       type: String,
-      required: true,
-      match: /^[0-9]{10}$/, // 10-digit mobile number
+      required: [true, "Mobile number is required"],
+      match: [/^[0-9]{10}$/, "Enter a valid 10-digit mobile number"],
+      trim: true,
     },
-    margin: {
-      type: Number,
-      required: true,
-      min: 0,
+    margin_percentage: {
+      type: String,
+      required: [true, "Margin percentage is required"],
+      min: [0, "Margin cannot be negative"],
     },
-     isDeleted: {
+    isDeleted: {
       type: Boolean,
-      default: false, //  for soft delete
+      default: false, // ✅ for soft delete
     },
   },
   { timestamps: true }
 );
+
+// Optional: auto-trim and format GST before saving
+customerSchema.pre("save", function (next) {
+  if (this.gst) {
+    this.gst = this.gst.trim().toUpperCase();
+  }
+  next();
+});
 
 export const Customer = mongoose.model("Customer", customerSchema);

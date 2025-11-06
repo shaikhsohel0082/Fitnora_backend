@@ -9,7 +9,7 @@ import {
 
 const customerRoute = express.Router();
 
-customerRoute.post("/create", createCustomer);
+customerRoute.post("/", createCustomer);
 customerRoute.get("/", getAllCustomers);
 customerRoute.get("/:id", getCustomerById);
 customerRoute.put("/:id", updateCustomer);
