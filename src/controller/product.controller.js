@@ -10,8 +10,8 @@ export const createProduct = async (req, res) => {
       description,
       contents,
       hsn_number,
-      benefits: benefits ? JSON.parse(benefits) : [],
-      unitMrpList: unitMrpList ? JSON.parse(unitMrpList) : [],
+      benefits: benefits ? benefits: [],
+      unitMrpList: unitMrpList ? unitMrpList : [],
       image: req.file ? `/uploads/${req.file.filename}` : null, // store image path
     });
 
