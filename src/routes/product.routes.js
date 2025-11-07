@@ -22,7 +22,7 @@ const upload = multer({ storage });
 
 const productRoutes = express.Router();
 
-productRoutes.post("/create",upload.single("image"), createProduct);
+productRoutes.post("/",upload.single("image"), createProduct);
 productRoutes.get("/", getAllProducts);
 productRoutes.get("/:id", getProductById);
 productRoutes.put("/:id", updateProduct);

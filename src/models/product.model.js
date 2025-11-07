@@ -6,7 +6,7 @@ const priceSchema = new mongoose.Schema(
       type: Number,
       required: true,
     },
-    price: {
+    mrp: {
       type: Number,
       required: true,
     },
@@ -20,11 +20,10 @@ const productSchema = new mongoose.Schema(
       type: String,
       required: true,
       trim: true,
-      unique: true,
     },
     image: {
       type: String,
-      required: true, // URL or path to image
+      required: false, // URL or path to image
     },
     description: {
       type: String,
@@ -38,17 +37,17 @@ const productSchema = new mongoose.Schema(
       type: [String],
       default: [],
     },
-    price: {
+    hsn_number:{
+      type:String,
+      required:true
+    },
+    unitMrpList: {
       type: [priceSchema],
       required: true,
       validate: {
         validator: (arr) => arr.length > 0,
         message: "At least one price entry is required",
       },
-    },
-    units: {
-      type: [Number],
-      default: [100, 500, 1000],
     },
     category: {
       type: String,
