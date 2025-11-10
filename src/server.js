@@ -4,6 +4,7 @@ import mongoose from "mongoose";
 import dotenv from "dotenv";
 import customerRoute from "./routes/customer.routes.js";
 import productRoutes from "./routes/product.routes.js";
+import invoiceRouter from "./routes/invoiceRoutes.js";
 
 dotenv.config();
 
@@ -28,6 +29,9 @@ app.use("/api/customers", customerRoute);
 
 //product
 app.use("/api/products", productRoutes);
+
+//invoice
+app.use("/api/invoice", invoiceRouter);
 
 // Default Route
 app.get("/", (req, res) => res.send("Server Running "));
