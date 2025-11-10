@@ -5,6 +5,7 @@ import {
   getProductById,
   updateProduct,
   deleteProduct,
+  getAllProductsv2,
 } from "../controller/product.controller.js";
 import multer from "multer";
 
@@ -24,6 +25,7 @@ const productRoutes = express.Router();
 
 productRoutes.post("/",upload.single("image"), createProduct);
 productRoutes.get("/", getAllProducts);
+productRoutes.post("/getAll", getAllProductsv2);
 productRoutes.get("/:id", getProductById);
 productRoutes.put("/:id", updateProduct);
 productRoutes.delete("/:id", deleteProduct);

@@ -191,3 +191,60 @@ export const getAllCustomers = async (req, res) => {
   }
 };
 
+export const getAllCustomersV2 = async (req, res) => {
+  try {
+    const { start = 0, limit = 10, searchTerm = "" } = req.body;
+
+    // ✅ Search condition
+    const searchQuery = {
+      isDeleted: false,
+      $or: [
+        { name: { $regex: searchTerm, $options: "i" } },
+        { city: { $regex: searchTerm, $options: "i" } },
+        { state: { $regex: searchTerm, $options: "i" } },
+        { mobile: { $regex: searchTerm, $options: "i" } },
+      ],
+    };
+
+    // ✅ Count total matching records
+    const totalCustomers = await Customer.countDocuments(searchQuery);
+
+    // ✅ Fetch paginated data
+    const customers = await Customer.find(searchQuery)
+      .sort({ createdAt: -1 })
+      .skip(start)
+      .limit(limit);
+
+    // ✅ Format response data
+    const formattedCustomers = customers.map((cust) => ({
+      id: cust._id,
+      name: cust.name,
+      address: cust.address,
+      city: cust.city,
+      state: cust.state,
+      pincode: cust.pincode,
+      gst: cust.gst,
+      mobile: cust.mobile,
+      margin_percentage: cust.margin_percentage,
+      createdAt: cust.createdAt,
+      updatedAt: cust.updatedAt,
+    }));
+
+    // ✅ Determine if there’s more data
+    const hasMore = start + limit < totalCustomers;
+
+    // ✅ Response structure aligned with frontend
+    res.status(200).json({
+      data: formattedCustomers,
+      metaData: {
+        hasMore,
+      },
+    });
+  } catch (error) {
+    console.error("Error fetching customers:", error);
+    res.status(500).json({
+      message: "Server error while fetching customers",
+      error: error.message,
+    });
+  }
+};

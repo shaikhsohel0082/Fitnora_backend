@@ -3,20 +3,23 @@ import { Product } from "../models/product.model.js";
 // Create product
 export const createProduct = async (req, res) => {
   try {
-    const { name, description, contents, benefits, unitMrpList,hsn_number } = req.body;
+    const { name, description, contents, benefits, unitMrpList, hsn_number } =
+      req.body;
 
     const newProduct = new Product({
       name,
       description,
       contents,
       hsn_number,
-      benefits: benefits ? benefits: [],
+      benefits: benefits ? benefits : [],
       unitMrpList: unitMrpList ? unitMrpList : [],
       image: req.file ? `/uploads/${req.file.filename}` : null, // store image path
     });
 
-    await newProduct.save();   
-    res.status(201).json({ message: "Product added successfully", product: newProduct });
+    await newProduct.save();
+    res
+      .status(201)
+      .json({ message: "Product added successfully", product: newProduct });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -55,10 +58,10 @@ export const getAllProducts = async (req, res) => {
       benefits: p.benefits,
       unitMrpList: p.unitMrpList,
       image: p.image,
-      hsn_number:p.hsn_number,
+      hsn_number: p.hsn_number,
       createdAt: p.createdAt,
       updatedAt: p.updatedAt,
-      stock:p.stock
+      stock: p.stock,
     }));
 
     res.status(200).json({
@@ -70,11 +73,13 @@ export const getAllProducts = async (req, res) => {
   }
 };
 
-
 // Get single product by ID
 export const getProductById = async (req, res) => {
   try {
-    const product = await Product.findOne({ _id: req.params.id, isDeleted: false });
+    const product = await Product.findOne({
+      _id: req.params.id,
+      isDeleted: false,
+    });
     if (!product) return res.status(404).json({ message: "Product not found" });
     res.status(200).json(product);
   } catch (error) {
@@ -84,7 +89,6 @@ export const getProductById = async (req, res) => {
 
 // Update product
 export const updateProduct = async (req, res) => {
-  
   try {
     const { id } = req.params;
     const product = await Product.findOneAndUpdate(
@@ -92,7 +96,8 @@ export const updateProduct = async (req, res) => {
       req.body,
       { new: true }
     );
-    if (!product) return res.status(404).json({ message: "Product not found or deleted" });
+    if (!product)
+      return res.status(404).json({ message: "Product not found or deleted" });
     res.status(200).json(product);
   } catch (error) {
     res.status(500).json({ message: "Server error", error });
@@ -111,6 +116,49 @@ export const deleteProduct = async (req, res) => {
     if (!product) return res.status(404).json({ message: "Product not found" });
     res.status(200).json({ message: "Product soft deleted successfully" });
   } catch (error) {
+    res.status(500).json({ message: "Server error", error });
+  }
+};
+export const getAllProductsv2 = async (req, res) => {
+  try {
+    const { start = 0, limit = 10, searchTerm = "" } = req.body;
+
+    const skip = parseInt(start, 10);
+    const pageLimit = parseInt(limit, 10);
+
+    const query = {
+      isDeleted: false,
+      name: { $regex: searchTerm, $options: "i" },
+    };
+
+    const totalProducts = await Product.countDocuments(query);
+
+    const productsData = await Product.find(query)
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(pageLimit);
+
+    const hasMore = skip + productsData.length < totalProducts;
+
+    // ✅ Map _id to id for frontend
+    const data = productsData.map((p) => ({
+      id: p._id,
+      name: p.name,
+      image: p.image,
+      description: p.description,
+      contents: p.contents,
+      hsn_number: p.hsn_number,
+      benefits: p.benefits,
+      unitMrpList: p.unitMrpList,
+      stock: p.stock,
+    }));
+
+    res.status(200).json({
+      data,
+      metaData: { hasMore },
+    });
+  } catch (error) {
+    console.error("Error loading products:", error);
     res.status(500).json({ message: "Server error", error });
   }
 };
