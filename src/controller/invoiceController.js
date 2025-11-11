@@ -2,9 +2,13 @@ import Invoice from "../models/invoice.model.js";
 
 export const createInvoice = async (req, res) => {
   try {
-    const { customerId, productDetails ,invoiceNumber} = req.body;
+    const { customerId, productDetails, invoiceNumber, paymentData } = req.body;
 
-    if ( !productDetails || !Array.isArray(productDetails) || !invoiceNumber) {
+    if (
+      !productDetails ||
+      !Array.isArray(productDetails) ||
+      !invoiceNumber 
+    ) {
       return res.status(400).json({ message: "Invalid payload" });
     }
 
@@ -18,12 +22,15 @@ export const createInvoice = async (req, res) => {
       customerId,
       productDetails,
       totalAmount,
-      invoiceNumber
+      invoiceNumber,
+      paymentData,
     });
 
     await newInvoice.save();
 
-    res.status(201).json({ message: "Invoice created successfully", id: newInvoice._id });
+    res
+      .status(201)
+      .json({ message: "Invoice created successfully", id: newInvoice._id });
   } catch (error) {
     console.error("Error creating invoice:", error);
     res.status(500).json({ message: "Server error", error: error.message });
@@ -39,7 +46,10 @@ export const generateInvoiceNumber = async (req, res) => {
 
     if (lastInvoice && lastInvoice.invoiceNumber) {
       // Extract numeric part from previous invoice number
-      const lastNum = parseInt(lastInvoice.invoiceNumber.replace("INV-", ""), 10);
+      const lastNum = parseInt(
+        lastInvoice.invoiceNumber.replace("INV-", ""),
+        10
+      );
       if (!isNaN(lastNum)) nextNumber = lastNum + 1;
     }
 
@@ -49,6 +59,8 @@ export const generateInvoiceNumber = async (req, res) => {
     return res.status(200).json({ invoiceNumber: newInvoiceNumber });
   } catch (error) {
     console.error("Error generating invoice number:", error);
-    return res.status(500).json({ message: "Server error", error: error.message });
+    return res
+      .status(500)
+      .json({ message: "Server error", error: error.message });
   }
 };

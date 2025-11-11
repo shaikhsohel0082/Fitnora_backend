@@ -16,13 +16,27 @@ const productInvoiceSchema = new mongoose.Schema(
   },
   { _id: false }
 );
+const paymentDataSchema = new mongoose.Schema({
+  modeOfPayment: {
+    type: String,
+    required: true,
+  },
+  paymentStatus: {
+    type: String,
+    required: true,
+  },
+  paidAmount: {
+    type: Number,
+    required: true,
+  },
+});
 
 const invoiceSchema = new mongoose.Schema(
   {
     customerId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Customer",
-      required: false, 
+      required: false,
       default: null,
     },
     productDetails: {
@@ -32,7 +46,10 @@ const invoiceSchema = new mongoose.Schema(
     totalAmount: {
       type: Number,
     },
-    invoiceNumber: { type: String, unique: true, required: true }
+    invoiceNumber: { type: String, unique: true, required: true },
+    paymentData: {
+      type: paymentDataSchema,
+    },
   },
   { timestamps: true }
 );
