@@ -128,16 +128,23 @@ const drawProductTable = (doc, y, invoice) => {
  * Draw Total Section
  */
 const drawTotals = (doc, y, invoice) => {
+  doc.font("Helvetica").fontSize(10);
+  const gst=invoice.totalAmount.toFixed(2) * 0.18
+ doc.text(
+    `Total GST @18%: Rs.${gst.toFixed(2)}`,
+    PAGE_MARGIN,
+    y,
+    { width: RIGHT_MARGIN - PAGE_MARGIN, align: "right" }
+  );
+  y+=20
   doc.font("Helvetica-Bold").fontSize(11);
-
   doc.text(
     `Total Amount: Rs.${invoice.totalAmount.toFixed(2)}`,
     PAGE_MARGIN,
     y,
     { width: RIGHT_MARGIN - PAGE_MARGIN, align: "right" }
   );
-
-  y += 20;
+y += 20;
   doc.font("Helvetica").fontSize(10);
 
   if (invoice.paymentData) {
