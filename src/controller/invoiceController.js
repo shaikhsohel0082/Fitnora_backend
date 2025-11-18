@@ -4,11 +4,7 @@ export const createInvoice = async (req, res) => {
   try {
     const { customerId, productDetails, invoiceNumber, paymentData } = req.body;
 
-    if (
-      !productDetails ||
-      !Array.isArray(productDetails) ||
-      !invoiceNumber 
-    ) {
+    if (!productDetails || !Array.isArray(productDetails) || !invoiceNumber) {
       return res.status(400).json({ message: "Invalid payload" });
     }
 
@@ -62,5 +58,40 @@ export const generateInvoiceNumber = async (req, res) => {
     return res
       .status(500)
       .json({ message: "Server error", error: error.message });
+  }
+};
+export const updateInvoice = async (req, res) => {
+  try {
+    const { id, paidAmount, paymentStatus } = req.body;
+
+    // Validation
+    if (!id) {
+      return res.status(400).json({ message: "Invoice ID is required" });
+    }
+
+    // Check invoice existence
+    const invoice = await Invoice.findById(id);
+    if (!invoice) {
+      return res.status(404).json({ message: "Invoice not found" });
+    }
+
+    // Update fields
+    invoice.paymentData.paidAmount =
+      paidAmount ?? invoice.paymentData.paidAmount;
+    invoice.paymentData.paymentStatus =
+      paymentStatus ?? invoice.paymentData.paymentStatus;
+
+    await invoice.save();
+
+    return res.status(200).json({
+      message: "Invoice updated successfully",
+      invoice,
+    });
+  } catch (error) {
+    console.error("Error updating invoice:", error);
+    return res.status(500).json({
+      message: "Server error",
+      error: error.message,
+    });
   }
 };

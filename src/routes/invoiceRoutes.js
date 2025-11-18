@@ -2,6 +2,7 @@ import express from "express";
 import {
   createInvoice,
   generateInvoiceNumber,
+  updateInvoice,
 } from "../controller/invoiceController.js";
 import Invoice from "../models/invoice.model.js";
 import { Customer } from "../models/customer.model.js";
@@ -9,6 +10,7 @@ import { Customer } from "../models/customer.model.js";
 const invoiceRouter = express.Router();
 
 invoiceRouter.post("/create", createInvoice);
+invoiceRouter.post("/update",updateInvoice)
 invoiceRouter.get("/", generateInvoiceNumber);
 /*
   @route   POST /invoice/getAll
