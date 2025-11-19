@@ -1,5 +1,5 @@
 import Invoice from "../models/invoice.model.js";
-
+import {Product} from "../models/product.model.js";
 export const createInvoice = async (req, res) => {
   try {
     const { customerId, productDetails, invoiceNumber, paymentData } = req.body;
@@ -14,6 +14,35 @@ export const createInvoice = async (req, res) => {
       0
     );
 
+    // Update all product stocks
+    for (const item of productDetails) {
+      // Fetch the product
+      const product = await Product.findById(item.productId);
+
+      if (!product) {
+        return res
+          .status(404)
+          .json({ message: `Product not found: ${item.productId}` });
+      }
+
+      // Calculate quantity usage in stock (your logic)
+      const quantityToDeduct = (item.unit * item.qty) / 1000; // ✔ correct
+
+      // Check stock availability
+      if (product.stock < quantityToDeduct) {
+        return res.status(400).json({
+          message: `Insufficient stock for ${product.name}`,
+        });
+      }
+
+      // Deduct stock
+      product.stock = product.stock - quantityToDeduct;
+
+      // Save the product
+      await product.save();
+    }
+
+    // Create invoice
     const newInvoice = new Invoice({
       customerId,
       productDetails,
@@ -24,9 +53,10 @@ export const createInvoice = async (req, res) => {
 
     await newInvoice.save();
 
-    res
-      .status(201)
-      .json({ message: "Invoice created successfully", id: newInvoice._id });
+    res.status(201).json({
+      message: "Invoice created successfully",
+      id: newInvoice._id,
+    });
   } catch (error) {
     console.error("Error creating invoice:", error);
     res.status(500).json({ message: "Server error", error: error.message });

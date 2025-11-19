@@ -56,6 +56,7 @@ const productSchema = new mongoose.Schema(
     stock: {
       type: Number,
       default: 0,
+      required:true
     },
     isDeleted: {
       type: Boolean,

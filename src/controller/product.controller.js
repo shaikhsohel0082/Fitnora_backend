@@ -3,7 +3,7 @@ import { Product } from "../models/product.model.js";
 // Create product
 export const createProduct = async (req, res) => {
   try {
-    const { name, description, contents, benefits, unitMrpList, hsn_number } =
+    const { name, description, contents, benefits, unitMrpList, hsn_number,stock } =
       req.body;
 
     const newProduct = new Product({
@@ -14,6 +14,7 @@ export const createProduct = async (req, res) => {
       benefits: benefits ? benefits : [],
       unitMrpList: unitMrpList ? unitMrpList : [],
       image: req.file ? `/uploads/${req.file.filename}` : null, // store image path
+      stock
     });
 
     await newProduct.save();
